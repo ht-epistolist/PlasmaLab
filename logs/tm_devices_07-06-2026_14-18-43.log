@@ -1,0 +1,79 @@
+[2026-07-06 14:18:43.471297] [tm_devices] [   DEBUG] timezone==America/New_York
+[2026-07-06 14:18:43.472355] [tm_devices] [   DEBUG] tm_devices==3.6.1
+[2026-07-06 14:18:43.472509] [tm_devices] [    INFO] Opening DeviceManager
+[2026-07-06 14:18:43.472813] [tm_devices] [ WARNING] An unsupported device type is being added to the DeviceManager. Not all functionality will be available in the device driver. Please consider contributing to tm_devices to implement official support for this device type.
+[2026-07-06 14:18:43.472897] [tm_devices] [    INFO] Creating Connection to UNSUPPORTED 1
+[2026-07-06 14:18:43.574338] [tm_devices] [   ERROR] Unable to establish a VISA connection to the UNSUPPORTED using the resource expression 'TCPIP0::10.10.10.2::inst0::INSTR' and the '@py' VISA library
+[2026-07-06 14:18:43.574542] [tm_devices] [   ERROR] 1st exception: pyvisa.errors.VisaIOError: VI_ERROR_RSRC_NFOUND (-1073807343): Insufficient location information or the requested device or resource is not present in the system.
+[2026-07-06 14:18:43.574760] [tm_devices] [CRITICAL] Unable to establish a VISA connection to the UNSUPPORTED using the resource expression 'TCPIP0::10.10.10.2::inst0::INSTR' and the '@py' VISA library
+
+An uncaught exception occurred. If the exception was explicitly raised by the tm_devices package, look for the most recent previous ERROR log entry above to see the specific timestamp of the exception. Otherwise, use the traceback to debug the issue.
+
+Traceback (most recent call last):
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/tcpip.py", line 491, in after_parsing
+    self.interface = Vxi11CoreClient(host_address, port, self.open_timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/tcpip.py", line 395, in __init__
+    rpc.TCPClient.__init__(self, host, prog, vers, open_timeout)
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/protocols/rpc.py", line 823, in __init__
+    pmap = TCPPortMapperClient(host, open_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/protocols/rpc.py", line 803, in __init__
+    RawTCPClient.__init__(self, host, PMAP_PROG, PMAP_VERS, PMAP_PORT, open_timeout)
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/protocols/rpc.py", line 454, in __init__
+    self.connect(1e-3 * open_timeout)
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/protocols/rpc.py", line 488, in connect
+    raise RPCError("can't connect to server")
+pyvisa_py.protocols.rpc.RPCError: can't connect to server
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/highlevel.py", line 196, in open
+    sess = cls(session, resource_name, parsed, open_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/tcpip.py", line 86, in __new__
+    return newcls(resource_manager_session, resource_name, parsed, open_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/sessions.py", line 329, in __init__
+    self.after_parsing()
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/tcpip.py", line 496, in after_parsing
+    raise OpenError()
+pyvisa_py.sessions.OpenError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/tm_devices/helpers/functions.py", line 339, in create_visa_connection
+    ).open_resource(resource_expression)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa/highlevel.py", line 3302, in open_resource
+    res.open(access_mode, open_timeout)
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa/resources/resource.py", line 290, in open
+    self.session, status = self._resource_manager.open_bare_resource(
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa/highlevel.py", line 3227, in open_bare_resource
+    return self.visalib.open(self.session, resource_name, access_mode, open_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa_py/highlevel.py", line 198, in open
+    return VISASession(0), self.handle_return_value(None, e.error_code)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/pyvisa/highlevel.py", line 252, in handle_return_value
+    raise errors.VisaIOError(rv)
+pyvisa.errors.VisaIOError: VI_ERROR_RSRC_NFOUND (-1073807343): Insufficient location information or the requested device or resource is not present in the system.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/tm_devices/device_manager.py", line 779, in add_unsupported_device
+    self._add_device(
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/tm_devices/device_manager.py", line 1326, in _add_device
+    return self.__create_device(new_device_name, new_device_config, 4)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/tm_devices/device_manager.py", line 1446, in __create_device
+    visa_resource = create_visa_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/tm_devices/helpers/functions.py", line 371, in create_visa_connection
+    raise ConnectionError(error_message) from error_1
+ConnectionError: Unable to establish a VISA connection to the UNSUPPORTED using the resource expression 'TCPIP0::10.10.10.2::inst0::INSTR' and the '@py' VISA library
