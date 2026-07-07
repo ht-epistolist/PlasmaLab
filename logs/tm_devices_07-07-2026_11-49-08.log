@@ -1,0 +1,18 @@
+[2026-07-07 11:49:08.035112] [tm_devices] [   DEBUG] timezone==America/New_York
+[2026-07-07 11:49:08.036580] [tm_devices] [   DEBUG] tm_devices==3.6.1
+[2026-07-07 11:49:08.036840] [tm_devices] [    INFO] Opening DeviceManager
+[2026-07-07 11:49:08.037334] [tm_devices] [ WARNING] An unsupported device type is being added to the DeviceManager. Not all functionality will be available in the device driver. Please consider contributing to tm_devices to implement official support for this device type.
+[2026-07-07 11:49:08.037448] [tm_devices] [    INFO] Creating Connection to UNSUPPORTED 1
+[2026-07-07 11:49:08.421943] [tm_devices] [   DEBUG] SCOPE VISA timeout set to: 5000.000ms
+[2026-07-07 11:49:08.422264] [tm_devices] [    INFO] (SCOPE 1) Query Binary Values >>  'CURVe?'
+[2026-07-07 11:49:11.692513] [tm_devices] [    INFO] Response from 'CURVe?' >>  array([256, 256, 256, ..., 512, 256, 256], shape=(125000,), dtype='>i2')
+[2026-07-07 11:49:11.693410] [tm_devices] [CRITICAL] The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+
+An uncaught exception occurred. If the exception was explicitly raised by the tm_devices package, look for the most recent previous ERROR log entry above to see the specific timestamp of the exception. Otherwise, use the traceback to debug the issue.
+
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/heliot/miniconda3/envs/plasma/lib/python3.12/site-packages/tm_devices/driver_mixins/device_control/pi_control.py", line 458, in query_binary
+    if not response:
+           ^^^^^^^^
+ValueError: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()

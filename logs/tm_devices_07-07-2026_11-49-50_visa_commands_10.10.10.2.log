@@ -1,0 +1,33 @@
+*IDN?
+SELect:CH1?
+SELect:CH2?
+SELect:CH3?
+SELect:CH4?
+DATa:ENCdg RIBinary
+DATa:WIDth 2
+DATa:SOUrce CH1
+HORizontal:RECOrdlength?
+DATa:STARt 1
+DATa:STOP 125000
+WFMPre:XINcr?
+WFMPre:XZEro?
+WFMPre:PT_Off?
+WFMPre:YMUlt?
+WFMPre:YOFf?
+WFMPre:YZEro?
+WFMPre:YUNit?
+WFMPre:XUNit?
+CURVe?
+DATa:SOUrce CH4
+HORizontal:RECOrdlength?
+DATa:STARt 1
+DATa:STOP 125000
+WFMPre:XINcr?
+WFMPre:XZEro?
+WFMPre:PT_Off?
+WFMPre:YMUlt?
+WFMPre:YOFf?
+WFMPre:YZEro?
+WFMPre:YUNit?
+WFMPre:XUNit?
+CURVe?

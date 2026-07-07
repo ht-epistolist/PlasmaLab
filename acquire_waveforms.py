@@ -8,6 +8,7 @@ import argparse
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.signal
 from tm_devices import DeviceManager
 from tm_devices.helpers import PYVISA_PY_BACKEND
 
@@ -17,7 +18,10 @@ def main():
     parser.add_argument("--channels", help="Comma-separated list of channels to acquire (e.g. CH1,CH4). If not specified, automatically detects active channels.")
     parser.add_argument("--csv", default="waveform_data.csv", help="Filename to save CSV data (default: waveform_data.csv)")
     parser.add_argument("--plot", default="waveform_plot.png", help="Filename to save plot image (default: waveform_plot.png)")
+    parser.add_argument("--filter", action="store_true", help="Apply a Butterworth low-pass filter to the acquired data")
+    parser.add_argument("--fc", type=float, help="Cutoff frequency for the low-pass filter in Hz (defaults to 10% of Nyquist frequency)")
     args = parser.parse_args()
+
 
     # Construct the correct resource expression for pyvisa-py compatibility
     resource_expression = f"TCPIP::{args.ip}::INSTR"
@@ -92,16 +96,23 @@ def main():
                     print(f"  Scaling: XInc={xincr} {xunit}, YMult={ymult} {yunit}")
 
                     # Retrieve and parse raw binary curve data using query_binary_values
-                    raw_ints = scope.query_binary_values(
-                        "CURVe?",
-                        datatype="h",         # 'h' = signed 16-bit short
-                        is_big_endian=True,   # RIBinary with 2 bytes is big-endian
-                        container=np.ndarray
+                    # Retrieve and parse raw binary curve data using query_binary
+                    # We retrieve it as a list and convert to numpy array to avoid an internal
+                    # numpy truth value bug in tm_devices (where it checks 'if not response:')
+                    raw_ints = np.array(
+                        scope.query_binary(
+                            "CURVe?",
+                            datatype="h",         # 'h' = signed 16-bit short
+                            is_big_endian=True    # RIBinary with 2 bytes is big-endian
+                        )
                     )
-                    
+
                     # Apply scaling
                     scaled_voltages = (raw_ints - yoff) * ymult + yzero
+                    if ch == "CH4":
+                        scaled_voltages *= 10.0
                     waveforms[ch] = scaled_voltages
+
 
                     # Reconstruct time axis if not done already
                     if time_axis is None:
@@ -118,50 +129,130 @@ def main():
         print(f"Error communicating with oscilloscope: {e}", file=sys.stderr)
         sys.exit(1)
 
+    # Apply Low-Pass Filter if requested
+    filtered_waveforms = {}
+    if args.filter:
+        print("\nApplying low-pass filter...")
+        try:
+            fs = 1.0 / xincr
+            nyquist = fs / 2.0
+            
+            # Default cutoff is 10% of Nyquist if not specified
+            fc = args.fc if args.fc is not None else 0.1 * nyquist
+            print(f"  Sampling Frequency: {fs:.2f} Hz")
+            print(f"  Low-pass Cutoff: {fc:.2f} Hz")
+            
+            # Design Butterworth filter (4th order)
+            b, a = scipy.signal.butter(4, fc, fs=fs, btype='low')
+            
+            for ch, data in waveforms.items():
+                filtered_waveforms[ch] = scipy.signal.filtfilt(b, a, data)
+            print("  Low-pass filter applied successfully.")
+        except Exception as e:
+            print(f"  Error applying low-pass filter: {e}", file=sys.stderr)
+
     # Save to CSV
     print(f"\nSaving data to {args.csv}...")
     try:
-        csv_header = f"Time ({xunit})," + ",".join([f"{ch} ({yunit})" for ch in waveforms.keys()])
-        csv_data = np.column_stack([time_axis] + [waveforms[ch] for ch in waveforms.keys()])
+        columns = [time_axis]
+        header_parts = [f"Time ({xunit})"]
+        
+        for ch in waveforms.keys():
+            columns.append(waveforms[ch])
+            if filtered_waveforms:
+                header_parts.append(f"{ch}_Raw ({yunit})")
+                columns.append(filtered_waveforms[ch])
+                header_parts.append(f"{ch}_Filtered ({yunit})")
+            else:
+                header_parts.append(f"{ch} ({yunit})")
+                
+        csv_header = ",".join(header_parts)
+        csv_data = np.column_stack(columns)
         np.savetxt(args.csv, csv_data, delimiter=",", header=csv_header, comments="")
         print(f"  Successfully saved {len(time_axis)} points.")
     except Exception as e:
         print(f"  Error saving CSV file: {e}", file=sys.stderr)
 
     # Plot waveforms
-    print(f"Plotting and saving figure to {args.plot}...")
-    try:
-        plt.figure(figsize=(10, 6))
-        
-        # Determine time scale units for nice plotting labels
-        max_time = np.max(np.abs(time_axis))
-        time_multiplier = 1.0
-        plot_time_unit = xunit
-        
-        if max_time < 1e-6:
-            time_multiplier = 1e9
-            plot_time_unit = "ns"
-        elif max_time < 1e-3:
-            time_multiplier = 1e6
-            plot_time_unit = "µs"
-        elif max_time < 1.0:
-            time_multiplier = 1e3
-            plot_time_unit = "ms"
+    import os
+    base_plot, ext = os.path.splitext(args.plot)
+    plot_all_path = f"{base_plot}_all{ext}"
+    plot_ch3_ch4_path = f"{base_plot}_ch3_ch4{ext}"
+    plot_filtered_path = f"{base_plot}_filtered{ext}"
 
-        for ch, scaled_data in waveforms.items():
-            plt.plot(time_axis * time_multiplier, scaled_data, label=ch)
+    # Determine time scale units for nice plotting labels
+    max_time = np.max(np.abs(time_axis))
+    time_multiplier = 1.0
+    plot_time_unit = xunit
+    
+    if max_time < 1e-6:
+        time_multiplier = 1e9
+        plot_time_unit = "ns"
+    elif max_time < 1e-3:
+        time_multiplier = 1e6
+        plot_time_unit = "µs"
+    elif max_time < 1.0:
+        time_multiplier = 1e3
+        plot_time_unit = "ms"
 
-        plt.title(f"Waveform from Tektronix DPO 2014B\nIDN: {idn.strip()}")
-        plt.xlabel(f"Time ({plot_time_unit})")
-        plt.ylabel(f"Amplitude ({yunit})")
-        plt.grid(True)
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig(args.plot, dpi=150)
-        plt.close()
-        print("  Successfully generated plot.")
-    except Exception as e:
-        print(f"  Error generating plot: {e}", file=sys.stderr)
+    # Plot 1: All active channels (raw)
+    if waveforms:
+        print(f"Plotting and saving all channels to {plot_all_path}...")
+        try:
+            plt.figure(figsize=(10, 6))
+            for ch in waveforms.keys():
+                plt.plot(time_axis * time_multiplier, waveforms[ch], label=ch)
+            plt.title(f"All Active Channels - Tektronix DPO 2014B\nIDN: {idn.strip()}")
+            plt.xlabel(f"Time ({plot_time_unit})")
+            plt.ylabel(f"Amplitude ({yunit})")
+            plt.grid(True)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(plot_all_path, dpi=150)
+            plt.close()
+            print("  Successfully generated all-channels plot.")
+        except Exception as e:
+            print(f"  Error generating all-channels plot: {e}", file=sys.stderr)
+
+    # Plot 2: CH3 and CH4 (last two channels, raw)
+    ch3_ch4_active = [ch for ch in ["CH3", "CH4"] if ch in waveforms]
+    if ch3_ch4_active:
+        print(f"Plotting and saving CH3/CH4 to {plot_ch3_ch4_path}...")
+        try:
+            plt.figure(figsize=(10, 6))
+            for ch in ch3_ch4_active:
+                plt.plot(time_axis * time_multiplier, waveforms[ch], label=ch)
+            plt.title(f"Channels 3 & 4 - Tektronix DPO 2014B\nIDN: {idn.strip()}")
+            plt.xlabel(f"Time ({plot_time_unit})")
+            plt.ylabel(f"Amplitude ({yunit})")
+            plt.grid(True)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(plot_ch3_ch4_path, dpi=150)
+            plt.close()
+            print("  Successfully generated CH3/CH4 plot.")
+        except Exception as e:
+            print(f"  Error generating CH3/CH4 plot: {e}", file=sys.stderr)
+
+    # Plot 3: Filtered vs Raw Comparison (only if filtering was run)
+    if filtered_waveforms:
+        print(f"Plotting and saving raw vs filtered comparison to {plot_filtered_path}...")
+        try:
+            plt.figure(figsize=(10, 6))
+            for ch in waveforms.keys():
+                plt.plot(time_axis * time_multiplier, waveforms[ch], ':', label=f"{ch} (Raw)", alpha=0.5)
+                plt.plot(time_axis * time_multiplier, filtered_waveforms[ch], '-', label=f"{ch} (Filtered)")
+            plt.title(f"Raw vs Filtered Signals - Tektronix DPO 2014B\nCutoff: {fc:.2e} Hz")
+            plt.xlabel(f"Time ({plot_time_unit})")
+            plt.ylabel(f"Amplitude ({yunit})")
+            plt.grid(True)
+            plt.legend()
+            plt.tight_layout()
+            plt.savefig(plot_filtered_path, dpi=150)
+            plt.close()
+            print("  Successfully generated raw vs filtered comparison plot.")
+        except Exception as e:
+            print(f"  Error generating filtered comparison plot: {e}", file=sys.stderr)
 
     print("Done!")
 

@@ -103,11 +103,16 @@ pip install tm_devices numpy matplotlib
 ### Python Script
 Run the script to automatically acquire, plot, and save the active channel data:
 ```bash
+# Basic run:
 python /home/heliot/Projects/PlasmaLab/acquire_waveforms.py
+
+# With low-pass filtering enabled (applies 4th-order Butterworth filter):
+python /home/heliot/Projects/PlasmaLab/acquire_waveforms.py --filter --fc 10000
 ```
 * **Script File:** [acquire_waveforms.py](file:///home/heliot/Projects/PlasmaLab/acquire_waveforms.py)
-* **Output Data:** [waveform_data.csv](file:///home/heliot/Projects/PlasmaLab/waveform_data.csv)
-* **Output Plot:** `waveform_plot.png`
+* **Output Data:** [waveform_data.csv](file:///home/heliot/Projects/PlasmaLab/waveform_data.csv) (includes `_Raw` and `_Filtered` columns if filter is enabled)
+* **Output Plots:** `waveform_plot_all.png`, `waveform_plot_ch3_ch4.png`, and `waveform_plot_filtered.png` (if filter is enabled)
+
 
 ### Jupyter Notebook
 Alternatively, open and run the interactive notebook:

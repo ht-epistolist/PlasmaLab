@@ -1,0 +1,17 @@
+[2026-07-07 11:33:44.070831] [tm_devices] [   DEBUG] timezone==America/New_York
+[2026-07-07 11:33:44.072154] [tm_devices] [   DEBUG] tm_devices==3.6.1
+[2026-07-07 11:33:44.072314] [tm_devices] [    INFO] Opening DeviceManager
+[2026-07-07 11:33:44.073514] [tm_devices] [ WARNING] An unsupported device type is being added to the DeviceManager. Not all functionality will be available in the device driver. Please consider contributing to tm_devices to implement official support for this device type.
+[2026-07-07 11:33:44.074127] [tm_devices] [    INFO] Creating Connection to UNSUPPORTED 1
+[2026-07-07 11:33:44.176098] [tm_devices] [   ERROR] Unable to establish a VISA connection to the UNSUPPORTED using the resource expression 'TCPIP0::10.10.10.2::inst0::INSTR' and the '@py' VISA library
+[2026-07-07 11:33:44.177426] [tm_devices] [   ERROR] 1st exception: pyvisa.errors.VisaIOError: VI_ERROR_RSRC_NFOUND (-1073807343): Insufficient location information or the requested device or resource is not present in the system.
+[2026-07-07 11:34:16.701671] [tm_devices] [ WARNING] The DeviceManager has already been created and is not allowed to be instantiated twice. Previously created instance will be used instead.
+[2026-07-07 11:34:16.703475] [tm_devices] [ WARNING] An unsupported device type is being added to the DeviceManager. Not all functionality will be available in the device driver. Please consider contributing to tm_devices to implement official support for this device type.
+[2026-07-07 11:34:16.704525] [tm_devices] [    INFO] Creating Connection to UNSUPPORTED 2
+[2026-07-07 11:34:16.806242] [tm_devices] [   ERROR] Unable to establish a VISA connection to the UNSUPPORTED using the resource expression 'TCPIP0::10.10.10.2::inst0::INSTR' and the '@py' VISA library
+[2026-07-07 11:34:16.807258] [tm_devices] [   ERROR] 1st exception: pyvisa.errors.VisaIOError: VI_ERROR_RSRC_NFOUND (-1073807343): Insufficient location information or the requested device or resource is not present in the system.
+[2026-07-07 11:34:30.387230] [tm_devices] [ WARNING] The DeviceManager has already been created and is not allowed to be instantiated twice. Previously created instance will be used instead.
+[2026-07-07 11:34:30.389989] [tm_devices] [ WARNING] An unsupported device type is being added to the DeviceManager. Not all functionality will be available in the device driver. Please consider contributing to tm_devices to implement official support for this device type.
+[2026-07-07 11:34:30.391083] [tm_devices] [    INFO] Creating Connection to UNSUPPORTED 3
+[2026-07-07 11:34:30.493600] [tm_devices] [   ERROR] Unable to establish a VISA connection to the UNSUPPORTED using the resource expression 'TCPIP0::10.10.10.2::inst0::INSTR' and the '@py' VISA library
+[2026-07-07 11:34:30.496002] [tm_devices] [   ERROR] 1st exception: pyvisa.errors.VisaIOError: VI_ERROR_RSRC_NFOUND (-1073807343): Insufficient location information or the requested device or resource is not present in the system.
