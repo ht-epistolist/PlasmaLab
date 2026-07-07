@@ -61,11 +61,14 @@ def main():
             scope.write("DATa:ENCdg RIBinary")  # Signed integer binary format
             scope.write("DATa:WIDth 2")        # 16-bit resolution (2 bytes per point)
 
+            raw_waveforms = {}
+            scaling_params = {}
             waveforms = {}
             time_axis = None
             xunit = "s"
             yunit = "V"
 
+            # 1. Acquisition Loop (Download raw bytes from scope)
             for ch in channels_to_acquire:
                 print(f"\nAcquiring waveform from {ch}...")
                 try:
@@ -78,27 +81,20 @@ def main():
                     scope.write(f"DATa:STOP {record_length}")
                     print(f"  Record length: {record_length} points")
 
-                    # Get horizontal scaling factors
-                    xincr = float(scope.query("WFMPre:XINcr?").strip())
-                    xzero = float(scope.query("WFMPre:XZEro?").strip())
-                    pt_off = float(scope.query("WFMPre:PT_Off?").strip())
-                    
-                    # Get vertical scaling factors
-                    ymult = float(scope.query("WFMPre:YMUlt?").strip())
-                    yoff = float(scope.query("WFMPre:YOFf?").strip())
-                    yzero = float(scope.query("WFMPre:YZEro?").strip())
-                    yunit = scope.query("WFMPre:YUNit?").strip().replace('"', '')
-                    xunit = scope.query("WFMPre:XUNit?").strip().replace('"', '')
+                    # Get scaling parameters
+                    params = {
+                        "xincr": float(scope.query("WFMPre:XINcr?").strip()),
+                        "xzero": float(scope.query("WFMPre:XZEro?").strip()),
+                        "pt_off": float(scope.query("WFMPre:PT_Off?").strip()),
+                        "ymult": float(scope.query("WFMPre:YMUlt?").strip()),
+                        "yoff": float(scope.query("WFMPre:YOFf?").strip()),
+                        "yzero": float(scope.query("WFMPre:YZEro?").strip()),
+                        "yunit": scope.query("WFMPre:YUNit?").strip().replace('"', ''),
+                        "xunit": scope.query("WFMPre:XUNit?").strip().replace('"', '')
+                    }
+                    scaling_params[ch] = params
 
-                    if xunit == "V" or not xunit:
-                        xunit = "s"
-
-                    print(f"  Scaling: XInc={xincr} {xunit}, YMult={ymult} {yunit}")
-
-                    # Retrieve and parse raw binary curve data using query_binary_values
                     # Retrieve and parse raw binary curve data using query_binary
-                    # We retrieve it as a list and convert to numpy array to avoid an internal
-                    # numpy truth value bug in tm_devices (where it checks 'if not response:')
                     raw_ints = np.array(
                         scope.query_binary(
                             "CURVe?",
@@ -106,20 +102,32 @@ def main():
                             is_big_endian=True    # RIBinary with 2 bytes is big-endian
                         )
                     )
+                    raw_waveforms[ch] = raw_ints
+                    print("  Raw waveform data retrieved successfully.")
+                except Exception as e:
+                    print(f"  Error acquiring channel {ch}: {e}", file=sys.stderr)
 
-                    # Apply scaling
-                    scaled_voltages = (raw_ints - yoff) * ymult + yzero
+            # 2. Scaling Step (Scale raw bytes to physical units)
+            if raw_waveforms:
+                print("\nScaling waveform data to physical units...")
+                for ch, raw_ints in raw_waveforms.items():
+                    params = scaling_params[ch]
+                    yunit = params["yunit"]
+                    xunit = params["xunit"]
+                    if xunit == "V" or not xunit:
+                        xunit = "s"
+
+                    print(f"  Scaling {ch}: XInc={params['xincr']} {xunit}, YMult={params['ymult']} {yunit}")
+                    scaled_voltages = (raw_ints - params["yoff"]) * params["ymult"] + params["yzero"]
+                    
+                    # Apply 10x multiplier on Channel 4
                     if ch == "CH4":
                         scaled_voltages *= 10.0
                     waveforms[ch] = scaled_voltages
 
-
                     # Reconstruct time axis if not done already
                     if time_axis is None:
-                        time_axis = xzero + xincr * (np.arange(len(raw_ints)) - pt_off)
-
-                except Exception as e:
-                    print(f"  Error acquiring channel {ch}: {e}", file=sys.stderr)
+                        time_axis = params["xzero"] + params["xincr"] * (np.arange(len(raw_ints)) - params["pt_off"])
 
             if not waveforms:
                 print("No waveform data could be retrieved. Exiting.", file=sys.stderr)
