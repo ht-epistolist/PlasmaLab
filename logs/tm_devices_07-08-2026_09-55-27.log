@@ -1,0 +1,11 @@
+[2026-07-08 09:55:27.410607] [tm_devices] [   DEBUG] timezone==America/New_York
+[2026-07-08 09:55:27.411893] [tm_devices] [   DEBUG] tm_devices==3.6.1
+[2026-07-08 09:55:27.412098] [tm_devices] [    INFO] Opening DeviceManager
+[2026-07-08 09:55:27.412529] [tm_devices] [ WARNING] An unsupported device type is being added to the DeviceManager. Not all functionality will be available in the device driver. Please consider contributing to tm_devices to implement official support for this device type.
+[2026-07-08 09:55:27.412624] [tm_devices] [    INFO] Creating Connection to UNSUPPORTED 1
+[2026-07-08 09:55:27.790574] [tm_devices] [   DEBUG] SCOPE VISA timeout set to: 5000.000ms
+[2026-07-08 09:55:27.790914] [tm_devices] [    INFO] (SCOPE 1) Query >>  '*IDN?'
+[2026-07-08 09:55:27.811053] [tm_devices] [    INFO] Response from '*IDN?' >>  'TEKTRONIX,DPO2014B,C040933,CF:91.1CT FV:v1.56'
+[2026-07-08 09:55:27.811365] [tm_devices] [    INFO] Closing Connections to Devices
+[2026-07-08 09:55:27.811458] [tm_devices] [    INFO] Closing Connection to SCOPE 1
+[2026-07-08 09:55:27.814831] [tm_devices] [    INFO] DeviceManager Closed

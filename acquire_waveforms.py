@@ -142,7 +142,9 @@ def main():
     if args.filter:
         print("\nApplying low-pass filter...")
         try:
-            fs = 1.0 / xincr
+            # Get sampling interval from any of the acquired channels
+            first_ch = list(waveforms.keys())[0]
+            fs = 1.0 / scaling_params[first_ch]["xincr"]
             nyquist = fs / 2.0
             
             # Default cutoff is 10% of Nyquist if not specified
