@@ -114,9 +114,14 @@ python /home/heliot/Projects/PlasmaLab/acquire_waveforms.py --filter --fc 10000
 * **Output Plots:** `waveform_plot_all.png`, `waveform_plot_ch3_ch4.png`, and `waveform_plot_filtered.png` (if filter is enabled)
 
 
-### Jupyter Notebook
-Alternatively, open and run the interactive notebook:
+### Jupyter Notebooks
+* **Acquisition Notebook:** [acquire_waveforms.ipynb](file:///home/heliot/Projects/PlasmaLab/acquire_waveforms.ipynb)
+  Connects to the scope, downloads, and processes data interactive cell-by-cell.
+* **Plotting Notebook:** [plot_waveforms.ipynb](file:///home/heliot/Projects/PlasmaLab/plot_waveforms.ipynb)
+  Loads and visualizes previously saved data files (such as [line.csv](file:///home/heliot/Projects/PlasmaLab/data/line.csv)) offline without requiring connection to the oscilloscope.
+
+To launch the Jupyter server:
 ```bash
-jupyter notebook /home/heliot/Projects/PlasmaLab/acquire_waveforms.ipynb
+jupyter notebook
 ```
-* **Notebook File:** [acquire_waveforms.ipynb](file:///home/heliot/Projects/PlasmaLab/acquire_waveforms.ipynb)
+

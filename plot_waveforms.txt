@@ -1,0 +1,129 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Enable inline plotting
+%matplotlib inline
+
+csv_path = "data/line.csv"  # Change this to your file path
+df = pd.read_csv(csv_path)
+print(f"Loaded {len(df)} points from {csv_path}")
+df.head()
+
+# Find time column
+time_col = [col for col in df.columns if "Time" in col][0]
+time_axis = df[time_col].to_numpy()
+time_unit = time_col.split("(")[-1].split(")")[0].strip() if "(" in time_col else "s"
+
+# Determine readable time scale units
+max_time = np.max(np.abs(time_axis))
+time_multiplier = 1.0
+plot_time_unit = time_unit
+
+if max_time < 1e-6:
+    time_multiplier = 1e9
+    plot_time_unit = "ns"
+elif max_time < 1e-3:
+    time_multiplier = 1e6
+    plot_time_unit = "µs"
+elif max_time < 1.0:
+    time_multiplier = 1e3
+    plot_time_unit = "ms"
+
+scaled_time = time_axis * time_multiplier
+print(f"Time scale: {plot_time_unit} (multiplied by {time_multiplier})")
+
+# Find all raw columns
+raw_cols = [col for col in df.columns if "_Raw" in col]
+if not raw_cols:
+    # Fallback if columns are not named with _Raw
+    raw_cols = [col for col in df.columns if col != time_col and "_Filtered" not in col]
+
+plt.figure(figsize=(12, 6))
+for col in raw_cols:
+    plt.plot(scaled_time, df[col], label=col.replace("_Raw", ""))
+
+plt.title("All Channels - Raw Signals")
+plt.xlabel(f"Time ({plot_time_unit})")
+plt.ylabel("Amplitude")
+plt.grid(True)
+plt.legend()
+plt.show()
+
+ch3_ch4_cols = [col for col in raw_cols if "CH3" in col or "CH4" in col]
+
+if ch3_ch4_cols:
+    plt.figure(figsize=(12, 6))
+    for col in ch3_ch4_cols:
+        plt.plot(scaled_time, df[col], label=col.replace("_Raw", ""))
+
+    plt.title("Channels 3 & 4 - Raw Signals")
+    plt.xlabel(f"Time ({plot_time_unit})")
+    plt.ylabel("Amplitude")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+else:
+    print("CH3 and CH4 are not present in this dataset.")
+
+# Find channels with both Raw and Filtered columns
+filtered_cols = [col for col in df.columns if "_Filtered" in col]
+
+if filtered_cols:
+    for filt_col in filtered_cols:
+        ch_name = filt_col.replace("_Filtered", "")
+        raw_col = f"{ch_name}_Raw"
+        
+        if raw_col in df.columns:
+            plt.figure(figsize=(12, 5))
+            plt.plot(scaled_time, df[raw_col], ':', label=f"{ch_name} (Raw)", alpha=0.5)
+            plt.plot(scaled_time, df[filt_col], '-', label=f"{ch_name} (Filtered)")
+            
+            plt.title(f"Raw vs. Filtered Signal - {ch_name}")
+            plt.xlabel(f"Time ({plot_time_unit})")
+            plt.ylabel("Amplitude")
+            plt.grid(True)
+            plt.legend()
+            plt.show()
+else:
+    print("No filtered channels found in this dataset.")
+
+import scipy.signal
+
+# 1. Calculate Sampling Parameters dynamically from the time data
+time_diffs = np.diff(time_axis)
+mean_dt = np.mean(time_diffs)
+fs = 1.0 / mean_dt
+nyquist = fs / 2.0
+
+# Configure filter parameters (adjust cutoff_freq to smooth more/less)
+cutoff_freq = 0.05 * nyquist  # 5% of Nyquist frequency
+filter_order = 4
+
+print(f"Sampling Frequency (fs): {fs:.2f} Hz")
+print(f"Nyquist Frequency: {nyquist:.2f} Hz")
+print(f"Applying Low-pass Cutoff Frequency (fc): {cutoff_freq:.2f} Hz")
+
+# Design Butterworth low-pass filter
+b, a = scipy.signal.butter(filter_order, cutoff_freq, fs=fs, btype='low')
+
+# 2. Filter raw channels dynamically
+interactive_filtered = {}
+for col in raw_cols:
+    ch_name = col.replace("_Raw", "")
+    interactive_filtered[ch_name] = scipy.signal.filtfilt(b, a, df[col].to_numpy())
+
+# 3. Plot Comparison of Raw vs. Interactively Filtered Data
+for ch in interactive_filtered.keys():
+    raw_col = f"{ch}_Raw" if f"{ch}_Raw" in df.columns else ch
+    plt.figure(figsize=(12, 5))
+    plt.plot(scaled_time, df[raw_col], ':', label=f"{ch} (Raw)", alpha=0.3)
+    plt.plot(scaled_time, interactive_filtered[ch], '-', label=f"{ch} (Filtered)")
+    
+    plt.title(f"Interactive Low-Pass Filter Comparison - {ch}")
+    plt.xlabel(f"Time ({plot_time_unit})")
+    plt.ylabel("Amplitude")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
