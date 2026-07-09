@@ -3,35 +3,29 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-# ==============================================================================
-# CONFIGURATION SECTION (Edit these variables directly)
-# ==============================================================================
-# List of CSV filenames in the data/ directory to compare
-files = [
-    "hill.csv",
-    "line.csv",
-    "ramp.csv",
-    "sawtooth.csv"
-]
-
-# List of channels to plot
-channels = ["CH1", "CH2", "CH3", "CH4"]
-
-# Multipliers corresponding to each channel in the 'channels' list
-multipliers = [1.0, 1.0, 1.0, 10.0]  # Scale CH4 ten times, others unchanged
-
-# Y-axis label unit
-yunit = "V (cA)"
-
-# Output folder and filename
-output_folder = "plots_compare"
-output_filename = "comparison_plot.png"
-# ==============================================================================
-
-def main():
-    data_dir = "data"
+def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots_compare1", output_filename=None):
+    """
+    Compares waveform data from multiple CSV files.
+    
+    Parameters:
+        files (list): Array of CSV filenames (located in 'data/' directory).
+        channels (list): Array of channels to plot (e.g., ['CH1', 'CH2']).
+        yunit (str): Y-axis label unit (e.g., 'V (cA)').
+        multipliers (list): Array of Y multipliers corresponding to each channel.
+        first_file_multiplier (float): Extra multiplier applied only to channels in the first file.
+        output_folder (str): Folder to save the output plot (default: 'plots_compare').
+        output_filename (str): Name of the generated plot image. If None, it is generated
+                               by concatenating the base names of the input files.
+    """
+    data_dir = "data1"
     os.makedirs(output_folder, exist_ok=True)
     
+    # Generate the output filename by concatenating input file names if not provided
+    if output_filename is None:
+        base_names = [os.path.splitext(f)[0] for f in files]
+        prefix = "d_" if plot_denoised else ""
+        output_filename = prefix + "_".join(base_names) + ".png"
+        
     plt.figure(figsize=(12, 6))
     
     # Map each channel to its multiplier
@@ -39,8 +33,8 @@ def main():
     
     plotted_any = False
     
-    for filename in files:
-        csv_path = os.path.join(data_dir, filename)
+    for idx, filename in enumerate(files):
+        csv_path = os.path.join(data_dir, filename + ".csv")
         if not os.path.exists(csv_path):
             print(f"Warning: File not found: {csv_path}. Skipping.")
             continue
@@ -58,7 +52,7 @@ def main():
             time_axis = df[time_col].to_numpy()  # Time in seconds
             
             # 1. Detect shot trigger using CH1_Raw
-            trigger_cols = [col for col in df.columns if "CH1_Raw" in col]
+            trigger_cols = [col for col in df.columns if f"{CH_ref}_Raw" in col]
             if not trigger_cols:
                 print(f"  Error: CH1_Raw column not found in {filename} to detect trigger. Skipping.")
                 continue
@@ -100,15 +94,28 @@ def main():
                 
                 # Apply multiplier
                 mult = multiplier_map[ch]
+                if idx == 0:
+                    mult *= first_file_multiplier
                 scaled_data = df[raw_col].to_numpy() * mult
                 
                 # Label format: "filename: channel"
-                label = f"{filename.replace('.csv', '')}: {ch}"
+                label = f"{filename}: {ch}"
                 if mult != 1.0:
                     label += f" (x{mult})"
                     
                 plt.plot(shifted_time_ms, scaled_data, label=label)
                 plotted_any = True
+                
+                # Plot denoised data if requested
+                if plot_denoised:
+                    filt_cols = [col for col in df.columns if f"{ch}_Filtered" in col]
+                    if filt_cols:
+                        filt_col = filt_cols[0]
+                        scaled_filt_data = df[filt_col].to_numpy() * mult
+                        filt_label = f"{filename}: {ch} (Filtered)"
+                        if mult != 1.0:
+                            filt_label += f" (x{mult})"
+                        plt.plot(shifted_time_ms, scaled_filt_data, '--', label=filt_label)
                 
         except Exception as e:
             print(f"  Error reading {filename}: {e}")
@@ -131,5 +138,32 @@ def main():
     
     print(f"\nSuccess! Comparison plot saved to {plot_save_path}")
 
+# Default execution when run as a script
 if __name__ == "__main__":
-    main()
+    test_files = ["hill", "line", "ramp", "sawtooth"]
+    test_channels = ["CH4"]
+    test_reference = "CH4"
+    test_multipliers = [1.0]
+    test_yunit = "A"
+    
+    for t in test_files:
+        # Standard plot
+        compare_waveforms(
+            files=[t, f"{t}1"],
+            channels=test_channels,
+            CH_ref=test_reference,
+            yunit=test_yunit,
+            multipliers=test_multipliers,
+            first_file_multiplier=20,
+            plot_denoised=False
+        )
+        # Denoised plot
+        compare_waveforms(
+            files=[t, f"{t}1"],
+            channels=test_channels,
+            CH_ref=test_reference,
+            yunit=test_yunit,
+            multipliers=test_multipliers,
+            first_file_multiplier=20,
+            plot_denoised=True
+        )
