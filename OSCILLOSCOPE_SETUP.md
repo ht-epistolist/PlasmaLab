@@ -6,21 +6,36 @@ This guide describes how to connect and configure your laptop to communicate wit
 
 ## ⚡ Quick Reconnection (Scope Already Configured)
 
-If the oscilloscope is already configured with static IP `10.10.10.2`, use these quick steps:
+If the oscilloscope is already configured with static IP `10.10.10.2`, follow this exact sequence to establish the connection:
 
-1. **Plug in the Ethernet cable** between the laptop and the oscilloscope.
-2. **Activate the conda environment**:
-   ```bash
-   conda activate plasma
-   ```
-3. **Bring up the laptop interface**:
-   ```bash
-   nmcli connection up "Wired connection 1"
-   ```
-4. **Run the acquisition script**:
-   ```bash
-   python /home/heliot/Projects/PlasmaLab/acquire_waveforms.py
-   ```
+1. **Establish the Physical Connection:**
+   * Connect the Ethernet cable to the rear of the oscilloscope and the other end to the USB adapter.
+   * Plug the USB adapter into your laptop. *(You will see a notification for `Wired connection 2`—this is expected).*
+2. **Power on the Oscilloscope:**
+   * Turn the oscilloscope's power switch on and wait for it to boot up completely.
+3. **Run the Host Connection Script:**
+   * Open a terminal on the laptop and run:
+     ```bash
+     sudo /home/heliot/Projects/PlasmaLab/connect_scope.sh
+     ```
+     *(This script dynamically locates the adapter port, unbinds the generic driver, switches the device to vendor configuration 1, and assigns the static IP `10.10.10.1`).*
+4. **Bind the Scope Settings (Physical Confirmation):**
+   * When the script pauses and prompts you in the terminal, go to the oscilloscope front panel:
+     1. Press the **Utility** button.
+     2. Press the **Utility Page** bottom menu softkey and select **I/O** using knob **a**.
+     3. Press the **Ethernet Network Settings** bottom menu softkey.
+     4. Press the bezel button next to **"OK Accept Settings"** on the screen to activate the scope's network stack.
+5. **Complete and Verify the Connection:**
+   * Return to your terminal and press **[ENTER]**. The script will verify link status and ping the scope.
+6. **Activate the Environment & Run the Code:**
+   * Activate the conda environment:
+     ```bash
+     conda activate plasma
+     ```
+   * Launch Jupyter Notebook to open [acquire_waveforms.ipynb](file:///home/heliot/Projects/PlasmaLab/acquire_waveforms.ipynb) or run the script:
+     ```bash
+     python /home/heliot/Projects/PlasmaLab/acquire_waveforms.py
+     ```
 
 ---
 

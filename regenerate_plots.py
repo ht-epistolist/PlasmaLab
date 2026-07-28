@@ -66,20 +66,22 @@ def main():
             plt.figure(figsize=(12, 6))
             for ch in sorted(raw_col_map.keys()):
                 raw_col = raw_col_map[ch]
-                plt.plot(scaled_time, df[raw_col], ':', label=f"{ch} (Raw)", alpha=0.5)
+                plt.plot(scaled_time, df[raw_col], ':', label=f"{ch} (Raw)", alpha=0.5, linewidth=1.5)
                 if ch in filtered_col_map:
                     filt_col = filtered_col_map[ch]
-                    plt.plot(scaled_time, df[filt_col], '-', label=f"{ch} (Filtered)")
+                    plt.plot(scaled_time, df[filt_col], '-', label=f"{ch} (Filtered)", alpha=0.9, linewidth=1.8)
             
-            plt.title("Comparison of Raw and Low-Pass Filtered Waveforms")
-            plt.xlabel(f"Time ({plot_time_unit})")
-            plt.ylabel("V (cA)")  # As requested: "V (cA)"
-            plt.grid(True)
-            plt.legend(loc="upper left")
+            plt.title("Comparison of Raw and Low-Pass Filtered Waveforms", fontsize=14, fontweight='bold', pad=15)
+            plt.xlabel(f"Time ({plot_time_unit})", fontsize=12, labelpad=10)
+            plt.ylabel("V (cA)", fontsize=12, labelpad=10)
+            plt.minorticks_on()
+            plt.grid(True, which='major', linestyle='--', color='darkgray', alpha=0.5)
+            plt.grid(True, which='minor', linestyle=':', color='lightgray', alpha=0.5)
+            plt.legend(loc="upper left", frameon=True, framealpha=0.9, facecolor='white', edgecolor='lightgray')
             plt.tight_layout()
             
             # Save plot
-            plt.savefig(plot_path, dpi=150)
+            plt.savefig(plot_path, dpi=300)
             plt.close()
             print(f"  Successfully saved plot to {plot_path}")
             

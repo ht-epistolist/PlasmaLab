@@ -6,13 +6,13 @@ def main():
     try:
         # socket.htons(0x0003) captures all ethernet protocols
         s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x0003))
-        s.bind(("enp0s13f0u1u1", 0))
+        s.bind(("enp0s13f0u1", 0))
         s.settimeout(10.0)
     except Exception as e:
         print(f"Error creating socket: {e}")
         sys.exit(1)
 
-    print("Listening for packets on enp0s13f0u1u1 for 10 seconds...")
+    print("Listening for packets on enp0s13f0u1 for 10 seconds...")
     try:
         while True:
             packet, addr = s.recvfrom(2048)

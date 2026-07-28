@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots_compare1", output_filename=None, data_dir = "data", colormap="viridis", alpha=0.75, dpi=300):
+def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots_compare1", output_filename=None, data_dir = "compare_data", colormap="viridis", alpha=0.75, dpi=300):
     """
     Compares waveform data from multiple CSV files.
     
@@ -156,7 +156,7 @@ def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_mu
 
 # Default execution when run as a script
 if __name__ == "__main__":
-    test_files = ["sin1", "sin2", "sin5", "sin15", "sin17", "sin20", "sin100"]
+    test_files = ["sin5", "sin15"]
     test_channels = ["CH4"]
     test_reference = "CH4"
     test_multipliers = [1.0]
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     for t in test_files:
         # Standard plot
         compare_waveforms(
-            files=test_files,
+            files=[f"{t}", f"{t}V20"],
             channels=test_channels,
             CH_ref=test_reference,
             yunit=test_yunit,
