@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots_compare1", output_filename=None):
+def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots_compare1", output_filename=None, data_dir = "data", colormap="viridis", alpha=0.75, dpi=300):
     """
     Compares waveform data from multiple CSV files.
     
@@ -16,8 +16,10 @@ def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_mu
         output_folder (str): Folder to save the output plot (default: 'plots_compare').
         output_filename (str): Name of the generated plot image. If None, it is generated
                                by concatenating the base names of the input files.
+        colormap (str): Name of the Matplotlib colormap to use for the gradient (default: 'viridis').
+        alpha (float): Alpha transparency coefficient for the plotted lines (default: 0.75).
+        dpi (int): Resolution of the saved plot in dots per inch (default: 300).
     """
-    data_dir = "data1"
     os.makedirs(output_folder, exist_ok=True)
     
     # Generate the output filename by concatenating input file names if not provided
@@ -32,6 +34,10 @@ def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_mu
     multiplier_map = dict(zip(channels, multipliers))
     
     plotted_any = False
+    
+    # Set up colormap for gradient colors
+    cmap = plt.get_cmap(colormap) if colormap else None
+    total_curves = len(files) * len(channels)
     
     for idx, filename in enumerate(files):
         csv_path = os.path.join(data_dir, filename + ".csv")
@@ -84,7 +90,7 @@ def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_mu
             shifted_time_ms = (time_axis - trigger_time) * 1000.0 + 10.0
             
             # 2. Plot configured channels
-            for ch in channels:
+            for ch_idx, ch in enumerate(channels):
                 # Find matching raw column for the channel
                 raw_cols = [col for col in df.columns if f"{ch}_Raw" in col]
                 if not raw_cols:
@@ -102,8 +108,16 @@ def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_mu
                 label = f"{filename}: {ch}"
                 if mult != 1.0:
                     label += f" (x{mult})"
+                
+                # Determine line color based on the gradient colormap
+                if cmap is not None:
+                    # Scale to 0.0 - 0.9 to avoid the bright yellow endpoint in viridis/plasma which is hard to read
+                    color_val = 0.9 * (idx * len(channels) + ch_idx) / max(1, total_curves - 1)
+                    color = cmap(color_val)
+                else:
+                    color = None
                     
-                plt.plot(shifted_time_ms, scaled_data, label=label)
+                plt.plot(shifted_time_ms, scaled_data, label=label, color=color, alpha=alpha, linewidth=1.8)
                 plotted_any = True
                 
                 # Plot denoised data if requested
@@ -115,7 +129,7 @@ def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_mu
                         filt_label = f"{filename}: {ch} (Filtered)"
                         if mult != 1.0:
                             filt_label += f" (x{mult})"
-                        plt.plot(shifted_time_ms, scaled_filt_data, '--', label=filt_label)
+                        plt.plot(shifted_time_ms, scaled_filt_data, '--', label=filt_label, color=color, alpha=alpha, linewidth=1.5)
                 
         except Exception as e:
             print(f"  Error reading {filename}: {e}")
@@ -124,23 +138,25 @@ def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_mu
         print("Error: No data was plotted. Comparison plot not saved.")
         return
         
-    plt.title("Comparison of Shot Waveforms (Time-Aligned to 10 ms)")
-    plt.xlabel("Time (ms)")
-    plt.ylabel(yunit)
-    plt.xlim(0, 500)  # Boundaries set from 0 to 500 ms
-    plt.grid(True)
-    plt.legend(loc="upper left")
+    plt.title("Comparison of Shot Waveforms (Time-Aligned to 10 ms)", fontsize=14, fontweight='bold', pad=15)
+    plt.xlabel("Time (ms)", fontsize=12, labelpad=10)
+    plt.ylabel(yunit, fontsize=12, labelpad=10)
+    plt.xlim(0, 250)  # Boundaries set from 0 to 500 ms
+    plt.minorticks_on()
+    plt.grid(True, which='major', linestyle='--', color='darkgray', alpha=0.5)
+    plt.grid(True, which='minor', linestyle=':', color='lightgray', alpha=0.5)
+    plt.legend(loc="upper right", frameon=True, framealpha=0.9, facecolor='white', edgecolor='lightgray')
     plt.tight_layout()
     
     plot_save_path = os.path.join(output_folder, output_filename)
-    plt.savefig(plot_save_path, dpi=150)
+    plt.savefig(plot_save_path, dpi=dpi)
     plt.close()
     
     print(f"\nSuccess! Comparison plot saved to {plot_save_path}")
 
 # Default execution when run as a script
 if __name__ == "__main__":
-    test_files = ["hill", "line", "ramp", "sawtooth"]
+    test_files = ["sin1", "sin2", "sin5", "sin15", "sin17", "sin20", "sin100"]
     test_channels = ["CH4"]
     test_reference = "CH4"
     test_multipliers = [1.0]
@@ -149,21 +165,21 @@ if __name__ == "__main__":
     for t in test_files:
         # Standard plot
         compare_waveforms(
-            files=[t, f"{t}1"],
+            files=test_files,
             channels=test_channels,
             CH_ref=test_reference,
             yunit=test_yunit,
             multipliers=test_multipliers,
-            first_file_multiplier=20,
+            # first_file_multiplier=20,
             plot_denoised=False
         )
         # Denoised plot
-        compare_waveforms(
-            files=[t, f"{t}1"],
-            channels=test_channels,
-            CH_ref=test_reference,
-            yunit=test_yunit,
-            multipliers=test_multipliers,
-            first_file_multiplier=20,
-            plot_denoised=True
-        )
+        # compare_waveforms(
+        #     files=[t, f"{t}1"],
+        #     channels=test_channels,
+        #     CH_ref=test_reference,
+        #     yunit=test_yunit,
+        #     multipliers=test_multipliers,
+        #     first_file_multiplier=20,
+        #     plot_denoised=True
+        # )
