@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots_compare1", output_filename=None, data_dir = "compare_data", colormap="viridis", alpha=0.75, dpi=300):
+def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots_compare1", output_filename=None, data_dir = "compare_data", colormap="plasma", alpha=0.75, dpi=300):
     """
     Compares waveform data from multiple CSV files.
     
@@ -16,7 +16,7 @@ def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_mu
         output_folder (str): Folder to save the output plot (default: 'plots_compare').
         output_filename (str): Name of the generated plot image. If None, it is generated
                                by concatenating the base names of the input files.
-        colormap (str): Name of the Matplotlib colormap to use for the gradient (default: 'viridis').
+        colormap (str): Name of the Matplotlib colormap to use for the gradient (default: 'plasma').
         alpha (float): Alpha transparency coefficient for the plotted lines (default: 0.75).
         dpi (int): Resolution of the saved plot in dots per inch (default: 300).
     """

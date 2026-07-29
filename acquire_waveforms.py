@@ -210,8 +210,13 @@ def main():
         print(f"Plotting and saving all channels to {plot_all_path}...")
         try:
             plt.figure(figsize=(12, 6))
-            for ch in waveforms.keys():
-                plt.plot(time_axis * time_multiplier, waveforms[ch], label=ch, alpha=0.9, linewidth=1.8)
+            channels = sorted(waveforms.keys())
+            total_channels = len(channels)
+            cmap = plt.get_cmap('plasma')
+            for ch_idx, ch in enumerate(channels):
+                color_val = 0.9 * ch_idx / max(1, total_channels - 1)
+                color = cmap(color_val)
+                plt.plot(time_axis * time_multiplier, waveforms[ch], label=ch, alpha=0.9, linewidth=1.8, color=color)
             plt.title(f"All Active Channels - Tektronix DPO 2014B\nIDN: {idn.strip()}", fontsize=14, fontweight='bold', pad=15)
             plt.xlabel(f"Time ({plot_time_unit})", fontsize=12, labelpad=10)
             plt.ylabel(f"Amplitude ({yunit})", fontsize=12, labelpad=10)
@@ -232,8 +237,12 @@ def main():
         print(f"Plotting and saving CH3/CH4 to {plot_ch3_ch4_path}...")
         try:
             plt.figure(figsize=(12, 6))
-            for ch in ch3_ch4_active:
-                plt.plot(time_axis * time_multiplier, waveforms[ch], label=ch, alpha=0.9, linewidth=1.8)
+            total_channels = len(ch3_ch4_active)
+            cmap = plt.get_cmap('plasma')
+            for ch_idx, ch in enumerate(ch3_ch4_active):
+                color_val = 0.9 * ch_idx / max(1, total_channels - 1)
+                color = cmap(color_val)
+                plt.plot(time_axis * time_multiplier, waveforms[ch], label=ch, alpha=0.9, linewidth=1.8, color=color)
             plt.title(f"Channels 3 & 4 - Tektronix DPO 2014B\nIDN: {idn.strip()}", fontsize=14, fontweight='bold', pad=15)
             plt.xlabel(f"Time ({plot_time_unit})", fontsize=12, labelpad=10)
             plt.ylabel(f"Amplitude ({yunit})", fontsize=12, labelpad=10)
@@ -253,9 +262,14 @@ def main():
         print(f"Plotting and saving raw vs filtered comparison to {plot_filtered_path}...")
         try:
             plt.figure(figsize=(12, 6))
-            for ch in waveforms.keys():
-                plt.plot(time_axis * time_multiplier, waveforms[ch], ':', label=f"{ch} (Raw)", alpha=0.5, linewidth=1.5)
-                plt.plot(time_axis * time_multiplier, filtered_waveforms[ch], '-', label=f"{ch} (Filtered)", alpha=0.9, linewidth=1.8)
+            channels = sorted(waveforms.keys())
+            total_channels = len(channels)
+            cmap = plt.get_cmap('plasma')
+            for ch_idx, ch in enumerate(channels):
+                color_val = 0.9 * ch_idx / max(1, total_channels - 1)
+                color = cmap(color_val)
+                plt.plot(time_axis * time_multiplier, waveforms[ch], ':', label=f"{ch} (Raw)", alpha=0.5, linewidth=1.5, color=color)
+                plt.plot(time_axis * time_multiplier, filtered_waveforms[ch], '-', label=f"{ch} (Filtered)", alpha=0.9, linewidth=1.8, color=color)
             plt.title(f"Raw vs Filtered Signals - Tektronix DPO 2014B\nCutoff: {fc:.2e} Hz", fontsize=14, fontweight='bold', pad=15)
             plt.xlabel(f"Time ({plot_time_unit})", fontsize=12, labelpad=10)
             plt.ylabel(f"Amplitude ({yunit})", fontsize=12, labelpad=10)

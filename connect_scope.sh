@@ -38,6 +38,7 @@ for intf in "$dev_path/$dev_base":*; do
 done
 
 # Switch USB configuration to vendor mode (1) logically (without power-cycling the physical link)
+sleep 1
 echo "Switching USB configuration value to 1..."
 echo 1 > "$dev_path/bConfigurationValue"
 sleep 2

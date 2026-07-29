@@ -64,12 +64,17 @@ def main():
             
             # Plot
             plt.figure(figsize=(12, 6))
-            for ch in sorted(raw_col_map.keys()):
+            channels = sorted(raw_col_map.keys())
+            total_channels = len(channels)
+            cmap = plt.get_cmap('plasma')
+            for ch_idx, ch in enumerate(channels):
                 raw_col = raw_col_map[ch]
-                plt.plot(scaled_time, df[raw_col], ':', label=f"{ch} (Raw)", alpha=0.5, linewidth=1.5)
+                color_val = 0.9 * ch_idx / max(1, total_channels - 1)
+                color = cmap(color_val)
+                plt.plot(scaled_time, df[raw_col], ':', label=f"{ch} (Raw)", alpha=0.5, linewidth=1.5, color=color)
                 if ch in filtered_col_map:
                     filt_col = filtered_col_map[ch]
-                    plt.plot(scaled_time, df[filt_col], '-', label=f"{ch} (Filtered)", alpha=0.9, linewidth=1.8)
+                    plt.plot(scaled_time, df[filt_col], '-', label=f"{ch} (Filtered)", alpha=0.9, linewidth=1.8, color=color)
             
             plt.title("Comparison of Raw and Low-Pass Filtered Waveforms", fontsize=14, fontweight='bold', pad=15)
             plt.xlabel(f"Time ({plot_time_unit})", fontsize=12, labelpad=10)
