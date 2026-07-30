@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots_compare1", output_filename=None, data_dir = "compare_data", colormap="plasma", alpha=0.75, dpi=300):
+def compare_waveforms(files, channels, CH_ref, yunit, multipliers, first_file_multiplier=1.0, plot_denoised=False, output_folder="plots/plots_compare1", output_filename=None, data_dir = "data/compare_data", colormap="plasma", alpha=0.75, dpi=300):
     """
     Compares waveform data from multiple CSV files.
     

@@ -38,6 +38,7 @@ def generate_pwm_waveform(pwm_type, maximum=10000, target=150, frequency=0.0001,
     elif pwm_type == 'rampup_flattop':
         ramp_length = int(math.floor(maximum / 2))
         zero = 100
+        target = 150
         inc = (target - zero) / ramp_length
         num = zero
         for i in range(ramp_length):
@@ -49,8 +50,9 @@ def generate_pwm_waveform(pwm_type, maximum=10000, target=150, frequency=0.0001,
             pulseList.append(target)
             
     elif pwm_type == 'rampup_flattop_rampdown':
+        target = 175
         ramp_length = int(math.floor(maximum / 4))
-        zero = 100
+        zero = 125
         inc = (target - zero) / ramp_length
         num = zero
         for i in range(ramp_length):
@@ -71,6 +73,7 @@ def generate_pwm_waveform(pwm_type, maximum=10000, target=150, frequency=0.0001,
             num -= inc
             
     elif pwm_type == 'constant':
+        target = 50
         for i in range(maximum):
             pulseList.append(target)
             
@@ -85,7 +88,7 @@ def generate_pwm_waveform(pwm_type, maximum=10000, target=150, frequency=0.0001,
 
 def modal_compare(data_dir, filename, pwm_type, channels=['CH4'], CH_ref='CH4', yunit='A', 
                   multipliers=[1.0], first_file_multiplier=1.0, plot_denoised=False, 
-                  output_folder='plotes_color', output_filename=None, colormap='plasma', 
+                  output_folder='plots/plotes_color', output_filename=None, colormap='plasma', 
                   alpha=0.75, dpi=300, pwm_sample_period_us=20.0, trigger_time_ms=10.0, 
                   xlim=(0, 250), pwm_target=150, pwm_frequency=0.0001, pwm_amplitude=100, 
                   pwm_maximum=10000):
@@ -244,7 +247,7 @@ def interactive_modal_compare():
     print("==================================================")
     
     # 1. Select data folder
-    data_folders = ["data", "data1a", "data20", "dataca", "compare_data"]
+    data_folders = ["data/data1a", "data/data20", "data/dataca", "data/compare_data"]
     existing_folders = [d for d in data_folders if os.path.isdir(d)]
     
     if not existing_folders:

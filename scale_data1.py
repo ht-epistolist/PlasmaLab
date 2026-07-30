@@ -3,8 +3,8 @@ import glob
 import pandas as pd
 
 def main():
-    data_dir = "/home/heliot/Projects/PlasmaLab/data"
-    data1_dir = "/home/heliot/Projects/PlasmaLab/data1"
+    data_dir = "/home/heliot/Projects/PlasmaLab/data/data"
+    data1_dir = "/home/heliot/Projects/PlasmaLab/data/data1"
     
     # Create data1 directory if it doesn't exist
     os.makedirs(data1_dir, exist_ok=True)

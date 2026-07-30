@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-    data_dir = "/home/heliot/Projects/PlasmaLab/data20"
-    plots1_dir = "/home/heliot/Projects/PlasmaLab/plots20"
+    data_dir = "/home/heliot/Projects/PlasmaLab/data/data20"
+    plots1_dir = "/home/heliot/Projects/PlasmaLab/plots/plots20"
     
     # Create plots1 directory if it doesn't exist
     os.makedirs(plots1_dir, exist_ok=True)
